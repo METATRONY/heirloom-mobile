@@ -1,0 +1,77 @@
+# Node
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+package-lock.json
+
+# React Native
+# Android
+android/.gradle/
+android/app/build/
+**/build/
+
+# iOS
+ios/Pods/
+ios/Pods-*
+ios/build/
+**/*.xcworkspace
+**/xcuserdata/
+**/DerivedData/
+*.pbxuser
+!default.pbxuser
+*.mode1v3
+*.mode2v3
+*.perspectivev3
+
+# Xcode
+*.xcuserstate
+
+# Buck
+buck-out/
+
+# Expo
+.expo/
+.expo-shared/
+
+# macOS
+.DS_Store
+
+# Editor configs
+.vscode/
+.idea/
+*.sublime-workspace
+*.sublime-project
+
+# Environment files
+.env
+.env.*
+.n8n/.env
+
+# Logs
+*.log
+logs/
+*.log.*
+
+# Temporary
+tmp/
+temp/
+*.tmp
+
+# Generated files
+dist/
+build/
+
+# n8n
+.n8n/
+
+# Misc
+*.swp
+*.swo
+
+# Lockfiles (optional to ignore if you prefer)
+# pnpm-lock.yaml
+
+# Keep README, docs, and config files in repo
+

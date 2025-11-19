@@ -260,16 +260,71 @@ In n8n UI:
    - Access Token: Your GitHub Personal Access Token
 
 3. **File System Access**
-  - n8n does not provide a "File System" option in the UI.
-  - To allow file access outside the default directory, set the environment variable when starting n8n:
-    ```bash
-    export N8N_DEFAULT_BINARY_DATA_DIRECTORY=/absolute/path/to/HeirloomMobile
-    ```
-    Or with Docker:
-    ```bash
-    docker run ... -e N8N_DEFAULT_BINARY_DATA_DIRECTORY=/data/projects/heirloom-mobile ...
-    ```
-  - Use "Read Binary File" and "Write Binary File" nodes in workflows, specifying absolute paths.
+
+- n8n does not provide a "File System" option in the UI. To allow n8n to read/write binary files outside its default data directory you must either set an environment variable (when running n8n directly) or mount a host directory into the container and point n8n to the container path.
+
+- Important: paths that contain spaces must be quoted or escaped in shell commands. Examples below use generic placeholders (no user-specific paths).
+
+Examples (host shell)
+
+```bash
+# Quoted (recommended if the path contains spaces)
+export N8N_DEFAULT_BINARY_DATA_DIRECTORY="/path/to/HeirloomMobile"
+
+# Escaped-space alternative
+export N8N_DEFAULT_BINARY_DATA_DIRECTORY=/path/to/HeirloomMobile\ with\ spaces
+
+# Better: create a space-free symlink and use that instead
+mkdir -p "$HOME/Projects"
+ln -s "/path/to/HeirloomMobile" "$HOME/Projects/HeirloomMobile"
+export N8N_DEFAULT_BINARY_DATA_DIRECTORY="$HOME/Projects/HeirloomMobile"
+```
+
+Docker example (quote the host path in `-v` and use a container path without spaces):
+
+```bash
+docker run -d \
+  --name n8n-production \
+  -p 5678:5678 \
+  -e N8N_BASIC_AUTH_ACTIVE=true \
+  -e N8N_BASIC_AUTH_USER=admin \
+  -e N8N_BASIC_AUTH_PASSWORD="$(openssl rand -base64 32)" \
+  -e N8N_HOST=n8n.yourdomain.com \
+  -e N8N_PROTOCOL=https \
+  -e WEBHOOK_URL=https://n8n.yourdomain.com/ \
+  -e PROJECT_ROOT=/data/projects/heirloom-mobile \
+  -e N8N_DEFAULT_BINARY_DATA_DIRECTORY=/data/projects/heirloom-mobile \
+  -v "/path/to/HeirloomMobile":/data/projects/heirloom-mobile \
+  -v ~/.n8n:/home/node/.n8n \
+  n8nio/n8n
+```
+
+Notes:
+
+- When running n8n in Docker the environment variable value should point to the path inside the container (no spaces).
+- If you use a `.env` file, some dotenv parsers will include quotes in the value; test and validate the resulting value in your runtime.
+- Use the "Read Binary File" and "Write Binary File" nodes in workflows and specify absolute paths appropriate for your runtime (host paths when running natively, container paths when running in Docker).
+
+Helper script
+
+We include a small helper script to create a space-free symlink and print the correct export/Docker examples:
+
+`scripts/setup-n8n-data-dir.sh`
+
+Usage examples:
+
+```sh
+# Interactive (prompts for path)
+./scripts/setup-n8n-data-dir.sh
+
+# Non-interactive
+./scripts/setup-n8n-data-dir.sh /path/to/HeirloomMobile
+
+# Overwrite an existing symlink without prompting
+./scripts/setup-n8n-data-dir.sh --force /path/to/HeirloomMobile
+```
+
+The script is idempotent: if the symlink already points to the target it does nothing. The `--force` (or `-f`) flag removes an existing symlink that points to a different location and replaces it without prompting.
 
 ### Step 3: Environment Variables
 
